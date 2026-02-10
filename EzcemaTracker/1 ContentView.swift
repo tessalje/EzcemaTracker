@@ -9,6 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     let gradient = LinearGradient(colors: [Color.bg,Color.pink],startPoint: .top, endPoint: .bottom)
+    
+    let images = ["pip3", "pip4", "pip5", "pip6"]
+    
+    let subtitles = ["Sleep", "Medicine","Report", "Games"]
     var body: some View {
         NavigationStack{
             ZStack {
@@ -37,19 +41,18 @@ struct ContentView: View {
                 VStack {
                     ScrollView {
                         ZStack {
-                            GlassCard(width: 360, height: 120, destination: SeverityTracker())
+                            GlassCard(width: 360, height: 160, destination: SeverityTracker())
                                 .disabled(true)
                             
-                            VStack {
-                                Text("Welcome back!")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .padding(.trailing, 160)
-                                
-                                HStack {
+                            HStack {
+                                VStack {
+                                    Text("Meet Pip, Your Ezcemate!")
+                                        .font(.system(size: 20, weight: .bold))
+                                        .padding(.trailing, 40)
+                                    
                                     Text("Severity: Moderate")
                                         .font(.system(size: 20, weight: .thin))
-                                        .padding(.top, 2)
-                                        .padding(.trailing, 60)
+                                        .padding(.trailing, 25)
                                     
                                     NavigationLink(destination: SeverityTracker()) {
                                         Text("Update")
@@ -59,14 +62,30 @@ struct ContentView: View {
                                     .buttonStyle(.borderedProminent)
                                     .buttonBorderShape(.capsule)
                                     .tint(.white)
+                                    .padding(.trailing, 113)
                                     
                                 }
+                                Image("pip2")
+                                    .resizable()
+                                    .frame(width: 120, height: 150)
+                                    .rotationEffect(.degrees(15))
                             }
                         }
                         ScrollView(.horizontal) {
                             HStack {
-                                ForEach(0..<4) {_ in
-                                    GlassCard(width: 100, height:100,destination: GameView())
+                                ForEach(0..<4, id: \.self) {index in
+                                    ZStack {
+                                        GlassCard(width: 100, height:100,destination: GameView())
+                                        
+                                        VStack {
+                                            Image(images[index])
+                                                .resizable()
+                                                .frame(width: 80, height: 70)
+                                            
+                                            Text(subtitles[index])
+                                                .font(.system(size: 15))
+                                        }
+                                    }
                                     
                                 }
                             }
@@ -78,8 +97,12 @@ struct ContentView: View {
                             .padding(.top, 10)
                             .padding(.trailing, 180)
                         
-                        GlassCard(width: 360, height: 120,destination: GameView())
-                            .disabled(true)
+                        ZStack {
+                            GlassCard(width: 360, height: 120,destination: ReminderView())
+                                .disabled(true)
+                            
+                            ReminderView()
+                        }
                         
                         Text("Your Progress")
                             .font(.system(size: 25, weight: .bold))
@@ -89,7 +112,7 @@ struct ContentView: View {
                         ScrollView(.horizontal) {
                             HStack {
                                 ForEach(0..<3) {_ in
-                                    GlassCard(width: 180, height:180,destination: GameView())
+                                    GlassCard(width: 170, height:170,destination: GameView())
                                     
                                 }
                             }
