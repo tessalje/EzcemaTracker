@@ -6,6 +6,29 @@
 //
 
 import SwiftUI
+struct HomeView: View {
+    var body: some View {
+        TabView {
+            ContentView()
+                .tabItem {
+                    Image(systemName: "house")
+                    Text("Home")
+                }
+
+            GalleryView()
+                .tabItem {
+                    Image(systemName: "photo.on.rectangle.angled")
+                    Text("Gallery")
+                }
+            
+            PipView()
+                .tabItem {
+                    Image(systemName: "person.crop.circle.fill")
+                    Text("Info")
+                }
+        }
+    }
+}
 
 struct ContentView: View {
     let gradient = LinearGradient(colors: [Color.bg,Color.pink],startPoint: .top, endPoint: .bottom)
@@ -156,5 +179,5 @@ struct GlassCard<Destination: View>: View {
     }
 }
 #Preview {
-    ContentView()
+    HomeView()
 }

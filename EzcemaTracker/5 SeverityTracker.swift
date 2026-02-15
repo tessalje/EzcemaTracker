@@ -35,7 +35,7 @@ struct SeverityTracker: View {
                         .padding(50)
                         .blur(radius: 120)
                         .offset(x: 240, y: 450)
-    
+                    
                     VStack {
                         Text("Track your body's itch level by tapping on Pip")
                             .padding(.leading, 27)
@@ -44,10 +44,27 @@ struct SeverityTracker: View {
                             .frame(width: 330, height: 380)
                             .padding(.leading, 50)
                     }
-                    .navigationTitle("Itch Tracker")
                 }
                 
+                Image("pip_Rhand")
+                    .resizable()
+                    .frame(width: 330, height: 380)
+                    .offset(x: 14, y: -115)
+                    .colorMultiply(.blue)
+                    .contextMenu {
+                        Button("Low") {
+                            print("level 1")
+                        }
+                        Button("Medium") {
+                            print("level 2")
+                        }
+                        Button("High") {
+                            print("level 3")
+                        }
+                    }
+                
             }
+            .navigationTitle("Itch Tracker")
         }
     }
 }
