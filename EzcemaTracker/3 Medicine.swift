@@ -5,22 +5,19 @@
 //  Created by Tessa Lee on 9/2/26.
 //
 import SwiftUI
-struct Medicine: Identifiable {
-    let id = UUID()
-    var name: String
-    var time: Date
-    var dates: [Date]
-}
 
 struct MedicineView: View {
-    
+    @State private var currentDate: Date = .init()
     let gradient = LinearGradient(colors: [Color.bg,Color.pink],startPoint: .top, endPoint: .bottom)
-    @State var selectedDate = Date()
-    @State private var showingSheet = false
-    @State private var medicines: [Medicine]
+    @State private var weekSlider: [[Date.WeekDay]] = []
+    @State private var currentWeekIndex: Int = 1
     
+    @State private var createWeek: Bool = false
+    @State private var createNewTask: Bool = false
+    
+    @Namespace private var animation
     var body: some View {
-        VStack {
+        NavigationView {
             ZStack {
                 gradient
                     .opacity(0.3)
@@ -44,133 +41,175 @@ struct MedicineView: View {
                         .blur(radius: 120)
                         .offset(x: 240, y: 450)
                 }
-                ScrollView {
-                    DatePicker("Select a date", selection: $selectedDate, displayedComponents: .date)
-                        .datePickerStyle(.graphical)
-                    
-                    Button("Create", systemImage: "plus") {
-                        showingSheet.toggle()
-                    }
-                    .padding(.leading, 200)
-                    .foregroundStyle(.black)
-                    .sheet(isPresented: $showingSheet) {
-                        EditMedicine(medicine: .constant(nil)) { index in
-                            medicines.append(index)
-                        }
-                    }
-                    
-                    ForEach($medicines) { $med in
-                        if med.dates.contains(where: {
-                            Calendar.current.isDate($0, inSameDayAs: selectedDate)
-                        }) {
-                            MedicineCard(
-                                medicine: $med,
-                                onDelete: {
-                                    medicines.removeAll { $0.id == med.id }
-                                }
-                            )
-                        }
-                    }
-                }
                 
+                VStack(alignment: .leading, spacing: 6, content: {
+                    HeaderView()
+                    
+                    ScrollView(.vertical) {
+                        VStack {
+                            TaskView(currentDate: $currentDate)
+                        }
+                        .hSpacing(.center)
+                        .vSpacing(.center)
+                    }
+                    .scrollIndicators(.hidden)
+                })
+                .vSpacing(.top)
+                .overlay(alignment: .bottomTrailing, content: {
+                    Button(action: {
+                        createNewTask.toggle()
+                    }, label: {
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .frame(width: 55, height: 55)
+                            .background(.blue.shadow(.drop(color: .black.opacity(0.4), radius:5, x: 2, y: 4)), in: .circle)
+                    })
+                })
+                .padding(15)
+                .onAppear(perform: {
+                    if weekSlider.isEmpty {
+                        let currentWeek = Date().fetchWeek()
+                        
+                        if let firstDate =  currentWeek.first?.date {
+                            weekSlider.append(firstDate.createPreviousWeek())
+                        }
+                        
+                        weekSlider.append(currentWeek)
+                        
+                        if let lastDate =  currentWeek.last?.date {
+                            weekSlider.append(lastDate.createNextWeek())
+                        }
+                    }
+                })
+                .sheet(isPresented: $createNewTask, content: {
+                    NewTaskView()
+                        .presentationDetents([.height(300)])
+                        .interactiveDismissDisabled()
+                        .presentationCornerRadius(30)
+                        .presentationBackground(.white)
+                })
             }
         }
     }
-}
-
-struct MedicineCard: View {
     
-    @Binding var medicine: Medicine
-    var onDelete: () -> Void
-    @State private var showingSheet = false
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white)
-                .frame(width: 300, height: 100)
+    @ViewBuilder
+    func HeaderView() -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 5) {
+                Text(currentDate.format("MMM"))
+                    .foregroundStyle(.blue)
+                Text(currentDate.format("YYYY"))
+                    .foregroundStyle(.white)
+            }
+            .font(.title.bold())
             
-            VStack {
-                HStack {
-                    Image(systemName: "pill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.black)
+            Text(currentDate.formatted(date: .complete, time: .omitted))
+                .font(.callout)
+                .fontWeight(.semibold)
+                .textScale(.secondary)
+                .foregroundStyle(.white)
+            
+            
+            TabView(selection: $currentWeekIndex) {
+                ForEach(weekSlider.indices, id: \.self) { index in
+                    let week = weekSlider[index]
                     
-                    Text(medicine.name)
-                        .font(.system(size: 20))
-                        .foregroundStyle(.black)
-                    
-                    Button("", systemImage: "pencil") {
-                        showingSheet.toggle()
-                    }
-                    .font(.system(size: 30))
-                    .padding(.leading, 100)
-                    .foregroundStyle(.black)
-                    .sheet(isPresented: $showingSheet) {
-                        EditMedicine(medicine: Binding<Medicine?>(
-                            get: { medicine },
-                            set: { if let newValue = $0 { medicine = newValue } }
-                        ), onSave: nil)
-                    }
-                    
-                    Button("Delete", role: .destructive) {
-                        onDelete()
-                    }
-                    Button("Cancel", role: .cancel) {}
+                    WeekView(week)
+                        .padding(.horizontal, 15)
+                        .tag(index)
                 }
-                Text(medicine.time.formatted(date: .omitted, time: .shortened))
-                    .font(.system(size: 15))
-                    .foregroundStyle(.black)
-                    .padding(.trailing, 150)
+            }
+            .padding(.horizontal, -15)
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 90)
+        }
+        .padding(15)
+        .hSpacing(.leading)
+        .onChange(of: currentWeekIndex, initial: false) { oldValue, newValue in
+            if newValue == 0 || newValue == weekSlider.count - 1 {
+                createWeek = true
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func WeekView(_ week: [Date.WeekDay]) -> some View {
+        HStack(spacing: 0) {
+            ForEach(week) { day in
+                VStack(spacing: 8) {
+                    Text(day.date.format("E"))
+                        .font(.callout)
+                        .fontWeight(.medium)
+                        .textScale(.secondary)
+                        .foregroundStyle(.black)
+                    
+                    Text(day.date.format("dd"))
+                        .font(.callout)
+                        .fontWeight(.medium)
+                        .textScale(.secondary)
+                        .foregroundStyle(isSameDate(day.date, currentDate) ? .white: .black)
+                        .frame(width: 35, height: 35)
+                        .background(content: {
+                            if isSameDate(day.date, currentDate) {
+                                Circle()
+                                    .fill(.blue)
+                                    .matchedGeometryEffect(id: "TABINDICATOR", in: animation)
+                            }
+                            
+                            if day.date.isToday {
+                                Circle()
+                                    .fill(.cyan)
+                                    .frame(width: 5, height: 5)
+                                    .vSpacing(.bottom)
+                                    .offset(y: 11)
+                            }
+                        })
+                        .background(.white.shadow(.drop(radius: 1)), in: .circle)
+                }
+                .hSpacing(.center)
+                .contentShape(.rect)
+                .onTapGesture {
+                    withAnimation(.snappy) {
+                        currentDate = day.date
+                    }
+                }
+            }
+        }
+        .background {
+            GeometryReader {
+                let minX = $0.frame(in: .global).minX
+                Color.clear
+                    .preference(key: OffsetKey.self, value: minX)
+                    .onPreferenceChange(OffsetKey.self) { value in
+                        if value.rounded() == 15 && createWeek {
+                            paginateWeek()
+                            createWeek = false
+                        }
+                }
+            }
+        }
+    }
+    
+    func paginateWeek() {
+        if weekSlider.indices.contains(currentWeekIndex) {
+            if let firstDate = weekSlider[currentWeekIndex].first?.date, currentWeekIndex == 0 {
+                weekSlider.insert(firstDate.createPreviousWeek(), at:0)
+                weekSlider.removeLast()
+                currentWeekIndex = 1
             }
             
+            if let lastDate = weekSlider[currentWeekIndex].last?.date, currentWeekIndex == (weekSlider.count - 1) {
+                
+                weekSlider.append(lastDate.createNextWeek())
+                weekSlider.removeFirst()
+                currentWeekIndex = weekSlider.count - 2
+            }
         }
-        
     }
 }
 
-
-struct EditMedicine: View {
-    @Environment(\.dismiss) var dismiss
-    @Binding var medicine: Medicine?
-    
-    var onSave: ((Medicine) -> Void)?
-    
-    @State private var medicineName = ""
-    @State private var time = Date()
-    @State private var selectedDates: Set<DateComponents> = []
-    
-    var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter
-    }
-    
-    var body: some View {
-        TextField("Enter medicine to be taken", text: $medicineName)
-            .textFieldStyle(.roundedBorder)
-            .padding()
-        
-        DatePicker("Select time",
-                   selection: $time,
-                   displayedComponents: .hourAndMinute)
-        
-        MultiDatePicker("Select dates",
-                        selection: $selectedDates)
-        
-        Button("Save") {
-            let dates = selectedDates.compactMap {
-                Calendar.current.date(from: $0)
-            }
-            
-            let newMedicine = Medicine(
-                name: medicineName,
-                time: time,
-                dates: dates)
-            
-            onSave!(newMedicine)
-            dismiss()
-        }
-    }
+#Preview {
+    MedicineView()
 }
 

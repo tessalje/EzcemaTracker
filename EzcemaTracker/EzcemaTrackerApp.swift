@@ -13,5 +13,6 @@ struct EzcemaTrackerApp: App {
         WindowGroup {
             HomeView()
         }
+        //.modelContainer(for: Task.self)
     }
 }
