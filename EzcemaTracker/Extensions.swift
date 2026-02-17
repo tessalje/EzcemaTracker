@@ -8,7 +8,7 @@ import SwiftUI
 import SwiftData
 
 @Model
-class Task: Identifiable {
+class TrackerTask: Identifiable {
     var id: UUID
     var taskTitle: String
     var creationDate: Date

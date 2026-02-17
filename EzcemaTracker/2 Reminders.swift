@@ -9,10 +9,15 @@ import SwiftUI
 internal import Combine
 
 struct ReminderView: View {
-    @State private var quote = "Take this time to rest and recharge"
+    @State private var quote = "Flare-ups are not your fault."
+    @State private var quotebg: Int = 1
     
     let quotes = [
         "Flare-ups are not your fault.",
+        "It does not matter how slowly you go as long as you do not stop.",
+        "YOU CAN DO THIS!",
+        "Your not alone.",
+        "Take as much time as you need to care for yourself.",
         "Be gentle with your skin today.",
         "Healing takes time. You are improving.",
         "Press, don’t scratch.",
@@ -38,16 +43,38 @@ struct ReminderView: View {
         "Use a humidifier to prevent dry air",
         "Consult a doctor if skin becomes infected",
         "Stay calm! High stress can trigger flares",
-        "Apply thick creams or ointments"
+        "Apply thick creams or ointments",
+        "Once you replace negative thoughts with positive ones, you'll start having positive results",
+        "Take care of your body. It's the only place you have to live.",
+        "Let food be thy medicine and medicine be thy food.",
+        "Early to bed and early to rise makes a man healthy, wealthy, and wise.",
+        "Breathe. Let go.",
+        "Dream as if you'll live forever.",
     ]
 
-    @State private var timer = Timer.publish(every: 500, on: .main, in: .common).autoconnect()
+    @State private var timer = Timer.publish(every:300, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        VStack {
+        ZStack {
+            Image("quotebg\(quotebg)")
+                .resizable()
+                .scaledToFill()
+                .opacity(0.7)
+                .frame(width: 360, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+            
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.black)
+                .opacity(0.3)
+                .frame(width: 360, height: 120)
+            
             Text(quote)
-                .padding()
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
+                .shadow(radius: 3)
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .frame(width: 340, height: 120)
+            
         }
         .onReceive(timer) { _ in
             refreshQuote()
@@ -56,5 +83,10 @@ struct ReminderView: View {
     
     func refreshQuote() {
         quote = quotes.randomElement() ?? ""
+        quotebg = Int.random(in: 1...14)
     }
+}
+
+#Preview {
+    ReminderView()
 }

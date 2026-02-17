@@ -8,7 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct TaskRowView: View {
-    @Bindable var task: Task
+    @Bindable var task: TrackerTask
     @Environment(\.modelContext) private var context
     var body: some View {
         
@@ -59,7 +59,7 @@ struct TaskRowView: View {
             return .green
         }
         
-        return task.creationDate.isSameHour ? .blue : (task.creationDate.isPast ? .red : .black)
+        return .red
     }
     
 }
@@ -67,9 +67,17 @@ struct TaskRowView: View {
 struct NewTaskView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    
     @State private var taskTitle: String = ""
-    @State private var taskDate: Date = .init()
     @State private var taskColor: TaskTint = .blue
+    
+    @Binding var currentDate: Date
+    @State private var taskDate: Date
+    init(currentDate: Binding<Date>) {
+        self._currentDate = currentDate
+        self._taskDate = State(initialValue: currentDate.wrappedValue)
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 15, content: {
             Button(action: {
@@ -136,13 +144,16 @@ struct NewTaskView: View {
             }
             
             Button(action: {
-                let task = Task(taskTitle: taskTitle, creationDate: taskDate, tint: taskColor)
-                do {
-                    context.insert(task)
-                    try context.save()
+                withAnimation(.snappy) {
+                    let task = TrackerTask(taskTitle: taskTitle, creationDate: taskDate, tint: taskColor)
+                    do {
+                        context.insert(task)
+                        try context.save()
+                        currentDate = taskDate
+                    } catch {
+                        print(error.localizedDescription)
+                    }
                     dismiss()
-                } catch {
-                    print(error.localizedDescription)
                 }
             }, label: {
                 Text("Add Medicine")
@@ -164,20 +175,20 @@ struct NewTaskView: View {
 struct TaskView: View {
     @Binding var currentDate: Date
     
-    @Query private var tasks: [Task]
+    @Query private var tasks: [TrackerTask]
     init(currentDate: Binding<Date>) {
         self._currentDate = currentDate
         
         let calendar = Calendar.current
         let startOfDate = calendar.startOfDay(for: currentDate.wrappedValue)
         let endOfDate = calendar.date(byAdding: .day, value: 1, to: startOfDate)!
-        let predicate = #Predicate<Task> {
+        let predicate = #Predicate<TrackerTask> {
             return $0.creationDate >= startOfDate && $0.creationDate < endOfDate
         }
         
         
         let sortDescriptor = [
-            SortDescriptor(\Task.creationDate, order: .forward)
+            SortDescriptor(\TrackerTask.creationDate, order: .forward)
         ]
         self._tasks = Query(filter: predicate, sort: sortDescriptor, animation: .snappy)
     }

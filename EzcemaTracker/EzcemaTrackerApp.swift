@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct EzcemaTrackerApp: App {
@@ -13,6 +14,6 @@ struct EzcemaTrackerApp: App {
         WindowGroup {
             HomeView()
         }
-        //.modelContainer(for: Task.self)
+        .modelContainer(for: [Photo.self, TrackerTask.self])
     }
 }

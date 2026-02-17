@@ -24,48 +24,25 @@ struct HomeView: View {
             PipView()
                 .tabItem {
                     Image(systemName: "person.crop.circle.fill")
-                    Text("Info")
+                    Text("Profile")
                 }
         }
     }
 }
 
 struct ContentView: View {
-    let gradient = LinearGradient(colors: [Color.bg,Color.pink],startPoint: .top, endPoint: .bottom)
-    
     let images = ["pip3", "pip4", "pip5", "pip6"]
-    
-    let subtitles = ["Sleep", "Medicine","Report", "Games"]
+    let subtitles = ["Sleep", "Medicine","Triggers", "Games"]
+    let destinations: [AnyView] = [AnyView(SleepView()), AnyView(MedicineView()), AnyView(TriggerView()), AnyView(GameView())]
+    @Environment(\.modelContext) private var context
     var body: some View {
         NavigationStack{
             ZStack {
-                gradient
-                    .opacity(0.3)
-                    .ignoresSafeArea()
-                
-                GeometryReader{ proxy in
-                    Color.white
-                        .opacity(0.3)
-                        .blur(radius: 200)
-                        .ignoresSafeArea()
-                    
-                    Circle()
-                        .fill(Color.pink)
-                        .padding(50)
-                        .blur(radius: 120)
-                        .offset(x: -200, y: -60)
-                    
-                    Circle()
-                        .fill(Color.orange)
-                        .padding(50)
-                        .blur(radius: 120)
-                        .offset(x: 240, y: 450)
-                }
+                BackgroundColor()
                 VStack {
                     ScrollView {
                         ZStack {
-                            GlassCard(width: 360, height: 160, destination: SeverityTracker())
-                                .disabled(true)
+                            GlassCard(width: 360, height: 160)
                             
                             HStack {
                                 VStack {
@@ -77,7 +54,7 @@ struct ContentView: View {
                                         .font(.system(size: 20, weight: .thin))
                                         .padding(.trailing, 25)
                                     
-                                    NavigationLink(destination: SeverityTracker()) {
+                                    NavigationLink(destination: SeverityTrackerView()) {
                                         Text("Update")
                                             .foregroundStyle(.black)
                                     }
@@ -95,19 +72,22 @@ struct ContentView: View {
                             }
                         }
                         ScrollView(.horizontal) {
-                            HStack {
+                            HStack(spacing: 10) {
                                 ForEach(0..<4, id: \.self) {index in
                                     ZStack {
-                                        GlassCard(width: 100, height:100,destination: GameView())
-                                        
-                                        VStack {
-                                            Image(images[index])
-                                                .resizable()
-                                                .frame(width: 80, height: 70)
-                                            
-                                            Text(subtitles[index])
-                                                .font(.system(size: 15))
+                                        GlassCard(width: 100, height:100)
+                                        NavigationLink(destination: destinations[index]) {
+                                            VStack {
+                                                Image(images[index])
+                                                    .resizable()
+                                                    .frame(width: 80, height: 70)
+                                                
+                                                Text(subtitles[index])
+                                                    .foregroundStyle(.black)
+                                                    .font(.system(size: 15))
+                                            }
                                         }
+                                        
                                     }
                                     
                                 }
@@ -121,9 +101,7 @@ struct ContentView: View {
                             .padding(.trailing, 180)
                         
                         ZStack {
-                            GlassCard(width: 360, height: 120,destination: ReminderView())
-                                .disabled(true)
-                            
+                            GlassCard(width: 360, height: 120)
                             ReminderView()
                         }
                         
@@ -135,7 +113,7 @@ struct ContentView: View {
                         ScrollView(.horizontal) {
                             HStack {
                                 ForEach(0..<3) {_ in
-                                    GlassCard(width: 170, height:170,destination: GameView())
+                                    GlassCard(width: 170, height:170)
                                     
                                 }
                             }
@@ -150,34 +128,66 @@ struct ContentView: View {
     }
 }
 
-struct GlassCard<Destination: View>: View {
+struct GlassCard: View {
     var width: CGFloat
     var height: CGFloat
-    var destination: Destination
-
+    
     var body: some View {
-        NavigationLink(destination: destination) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(.white)
-                    .opacity(0.5)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(
-                                .linearGradient(.init(colors: [
-                                    Color.red,
-                                    Color.clear,
-                                    Color.orange
-                                ]), startPoint: .topLeading, endPoint: .bottomTrailing),
-                                lineWidth: 2
-                            )
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-            }
-            .frame(width: width, height: height)
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.white)
+                .opacity(0.5)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            .linearGradient(.init(colors: [
+                                Color.red,
+                                Color.clear,
+                                Color.orange
+                            ]), startPoint: .topLeading, endPoint: .bottomTrailing),
+                            lineWidth: 2
+                        )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20))
         }
+        .frame(width: width, height: height)
     }
 }
+
 #Preview {
     HomeView()
+}
+
+
+
+struct BackgroundColor: View {
+    let gradient = LinearGradient(colors: [Color.bg,Color.pink],startPoint: .top, endPoint: .bottom)
+    
+
+    var body: some View {
+        ZStack {
+            gradient
+                .opacity(0.3)
+                .ignoresSafeArea()
+
+            GeometryReader { _ in
+                Color.white
+                    .opacity(0.3)
+                    .blur(radius: 200)
+                    .ignoresSafeArea()
+
+                Circle()
+                    .fill(Color.pink)
+                    .padding(50)
+                    .blur(radius: 120)
+                    .offset(x: -200, y: -60)
+
+                Circle()
+                    .fill(Color.orange)
+                    .padding(50)
+                    .blur(radius: 120)
+                    .offset(x: 240, y: 450)
+            }
+        }
+    }
 }

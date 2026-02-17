@@ -8,7 +8,6 @@ import SwiftUI
 
 struct MedicineView: View {
     @State private var currentDate: Date = .init()
-    let gradient = LinearGradient(colors: [Color.bg,Color.pink],startPoint: .top, endPoint: .bottom)
     @State private var weekSlider: [[Date.WeekDay]] = []
     @State private var currentWeekIndex: Int = 1
     
@@ -19,28 +18,7 @@ struct MedicineView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                gradient
-                    .opacity(0.3)
-                    .ignoresSafeArea()
-                
-                GeometryReader{ proxy in
-                    Color.white
-                        .opacity(0.3)
-                        .blur(radius: 200)
-                        .ignoresSafeArea()
-                    
-                    Circle()
-                        .fill(Color.pink)
-                        .padding(50)
-                        .blur(radius: 120)
-                        .offset(x: -200, y: -60)
-                    
-                    Circle()
-                        .fill(Color.orange)
-                        .padding(50)
-                        .blur(radius: 120)
-                        .offset(x: 240, y: 450)
-                }
+                BackgroundColor()
                 
                 VStack(alignment: .leading, spacing: 6, content: {
                     HeaderView()
@@ -82,13 +60,12 @@ struct MedicineView: View {
                         }
                     }
                 })
-                .sheet(isPresented: $createNewTask, content: {
-                    NewTaskView()
+                .sheet(isPresented: $createNewTask) {
+                    NewTaskView(currentDate: $currentDate)
                         .presentationDetents([.height(300)])
                         .interactiveDismissDisabled()
                         .presentationCornerRadius(30)
-                        .presentationBackground(.white)
-                })
+                }
             }
         }
     }

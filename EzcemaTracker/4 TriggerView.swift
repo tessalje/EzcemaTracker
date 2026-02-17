@@ -8,8 +8,10 @@
 
 import SwiftUI
 
-struct ProgressTracker: View {
+struct TriggerView: View {
     var body: some View {
-        Text("")
+        ZStack {
+            BackgroundColor()
+        }
     }
 }
