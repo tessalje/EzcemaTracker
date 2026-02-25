@@ -7,28 +7,24 @@
 
 import SwiftUI
 import Foundation
-
-struct SleepData: Identifiable {
-    let id = UUID()
-    let duration: String
-    let wakeUps: Double
-    let itchLevel: String
-}
+import SwiftData
 
 struct SleepView: View {
     @State private var isShowingSheet = false
-    @State private var entries: [SleepData] = []
+    @Query private var entries: [SleepData]
     var body: some View {
         NavigationStack {
             ZStack {
                 BackgroundColor()
-                
                 ScrollView {
+                    Text("How was your sleep today?")
+                        .padding(.trailing, 155)
                     ForEach(entries) { entry in
                         SleepCard(entry: entry)
                     }
                 }
             }
+            .navigationTitle("Sleep Tracker")
             .overlay(alignment: .bottomTrailing, content: {
                 Button(action: {
                     isShowingSheet.toggle()
@@ -42,18 +38,18 @@ struct SleepView: View {
                 })
             })
             .sheet(isPresented: $isShowingSheet) {
-                SleepForm(entries: $entries)
+                SleepForm()
                     .presentationDetents([.height(550)])
                     .interactiveDismissDisabled()
                     .presentationCornerRadius(30)
             }
-            .navigationTitle("Sleep Tracker")
         }
     }
 }
 
 struct SleepForm: View {
-    @Binding var entries: [SleepData]
+    @Environment(\.modelContext) private var modelContext
+
     @State private var selectedStartHour = Date()
     @State private var selectedEndHour = Date()
     @State private var value: Double = 0.0
@@ -200,10 +196,11 @@ struct SleepForm: View {
     func save() {
         let entry = SleepData(
             duration: sleepDuration,
-            wakeUps: value,
-            itchLevel: getResponseWithEmoji(selectedEmoji)
+            wakeups: value,
+            itchlevel: getResponseWithEmoji(selectedEmoji)
         )
-        entries.append(entry)
+
+        modelContext.insert(entry)
         dismiss()
     }
     
@@ -232,49 +229,6 @@ struct SleepForm: View {
 
 #Preview {
     SleepView()
+        .modelContainer(for: SleepData.self)
 }
 
-
- 
-struct emojiView: View {
-    @Binding var selectedEmoji: String
-    var emojiText: String
-     
-    var body: some View {
-        Button {
-            withAnimation(.spring(response:0.3, dampingFraction: 0.5)){
-                selectedEmoji = emojiText
-            }
-             
-        } label:{
-            Text(emojiText)
-                .font(Font.custom("Avenir", size: 23))
-        }
-    }
-}
-
-struct SleepCard: View {
-    let entry: SleepData
-    let currentDate = Date()
-    var body: some View {
-        RoundedRectangle(cornerRadius: 15)
-            .fill(.white)
-            .opacity(0.8)
-            .shadow(radius: 2, x: 6, y: 5)
-            .overlay(alignment: .leading) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Sleep entry on **\(Date.now, format: .dateTime.day().month().year())**:")
-                        .font(.system(size: 21, design: .rounded))
-                    Text("**Duration:** \(entry.duration)")
-                        .font(.system(size: 16, design: .rounded))
-                    Text("**Wake-ups:** \(Int(entry.wakeUps))")
-                        .font(.system(size: 16, design: .rounded))
-                    Text("**Itch level:** \(entry.itchLevel)")
-                        .font(.system(size: 16, design: .rounded))
-                }
-                .padding(20)
-            }
-            .frame(width: 360, height: 130)
-            .padding(.bottom, 10)
-    }
-}

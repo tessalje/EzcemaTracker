@@ -34,6 +34,8 @@ struct GalleryView: View {
                 BackgroundColor()
 
                 ScrollView {
+                    Text("Track the progress of your skin condition")
+                        .padding(.trailing, 60)
                     LazyVGrid(columns: columns) {
                         ForEach(images, id: \.self) { photo in
                             if let uiImage = UIImage(data: photo.data) {
@@ -43,14 +45,14 @@ struct GalleryView: View {
                                         .scaledToFill()
                                         .frame(width: 190, height: 150)
                                         .cornerRadius(5)
-                                    Button(action: {
-                                        context.delete(photo)
-                                    }) {
-                                        Image(systemName: "trash")
-                                            .foregroundStyle(.red)
-                                            .font(.system(size: 20))
-                                            .padding(8)
-                                    }
+                                        .contextMenu {
+                                            Button(role: .destructive) {
+                                                context.delete(photo)
+                                            }label: {
+                                                Label("Delete", systemImage: "trash")
+                                                    .foregroundStyle(.red)
+                                            }
+                                        }
                                     
                                 }
                             }

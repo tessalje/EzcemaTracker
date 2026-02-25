@@ -9,7 +9,7 @@ import SwiftUI
 internal import Combine
 
 struct ReminderView: View {
-    @State private var quote = "Flare-ups are not your fault."
+    @State private var quote = "Healing takes time. You are improving."
     @State private var quotebg: Int = 1
     
     let quotes = [
@@ -75,6 +75,10 @@ struct ReminderView: View {
                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                 .frame(width: 340, height: 120)
             
+        }
+        .onAppear() {
+            quote = quotes.randomElement() ?? ""
+            quotebg = Int.random(in: 1...14)
         }
         .onReceive(timer) { _ in
             refreshQuote()

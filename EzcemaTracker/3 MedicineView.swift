@@ -15,6 +15,8 @@ struct MedicineView: View {
     @State private var createNewTask: Bool = false
     
     @Namespace private var animation
+    @Environment(\.modelContext) var context
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -26,6 +28,7 @@ struct MedicineView: View {
                     ScrollView(.vertical) {
                         VStack {
                             TaskView(currentDate: $currentDate)
+                                
                         }
                         .hSpacing(.center)
                         .vSpacing(.center)
@@ -68,7 +71,11 @@ struct MedicineView: View {
                 }
             }
         }
+        .onAppear {
+            print(context)
+        }
     }
+    
     
     @ViewBuilder
     func HeaderView() -> some View {

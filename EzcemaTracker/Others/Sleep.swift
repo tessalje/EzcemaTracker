@@ -1,0 +1,83 @@
+//
+//  Sleep.swift
+//  EzcemaTracker
+//
+//  Created by Tessa Lee on 18/2/26.
+//
+
+import SwiftData
+import SwiftUI
+
+@Model
+class SleepData: Identifiable {
+    var id = UUID()
+    var duration: String
+    var wakeUps: Double
+    var itchLevel: String
+    
+    init(id: UUID = UUID(), duration: String, wakeups: Double, itchlevel: String) {
+        self.id = id
+        self.duration = duration
+        self.wakeUps = wakeups
+        self.itchLevel = itchlevel
+    }
+}
+    
+
+struct emojiView: View {
+   @Binding var selectedEmoji: String
+   var emojiText: String
+   
+   var body: some View {
+       Button {
+           withAnimation(.spring(response:0.3, dampingFraction: 0.5)){
+               selectedEmoji = emojiText
+           }
+            
+       } label:{
+           Text(emojiText)
+               .font(Font.custom("Avenir", size: 23))
+       }
+   }
+}
+
+struct SleepCard: View {
+    let entry: SleepData
+    let currentDate = Date()
+
+    @State private var isShowingColor: Bool = false
+    @Environment(\.modelContext) var modelContext
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 15)
+                .fill(.white)
+                .opacity(0.8)
+                .shadow(radius: 2, x: 6, y: 5)
+                .overlay(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Sleep entry on **\(Date.now, format: .dateTime.day().month().year())**:")
+                                .font(.system(size: 21, design: .rounded))
+                        }
+                        Text("**Duration:** \(entry.duration)")
+                            .font(.system(size: 16, design: .rounded))
+                        Text("**Wake-ups:** \(Int(entry.wakeUps))")
+                            .font(.system(size: 16, design: .rounded))
+                        Text("**Itch level:** \(entry.itchLevel)")
+                            .font(.system(size: 16, design: .rounded))
+                    }
+                    .padding(20)
+                }
+                .frame(maxWidth: 380, minHeight: 130)
+                .contextMenu {
+                    Button(role: .destructive) {
+                        modelContext.delete(entry)
+                    }label: {
+                        Label("Delete", systemImage: "trash")
+                            .foregroundStyle(.red)
+                    }
+                }
+        }
+    }
+}
