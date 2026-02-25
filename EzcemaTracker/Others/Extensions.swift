@@ -31,17 +31,17 @@ class TrackerTask: Identifiable {
 enum TaskTint: String, Codable, CaseIterable {
     case pink
     case purple
-    case white
+    case gray
     case blue
     case green
     
     var color: Color {
         switch self {
-        case .pink: return .pink.opacity(0.5)
-        case .purple: return .purple.opacity(0.5)
-        case .white: return .gray.opacity(0.1)
-        case .blue: return .blue.opacity(0.5)
-        case .green: return .green.opacity(0.5)
+        case .pink: return Color.mypink
+        case .purple: return Color.mypurple
+        case .gray: return Color.mygray
+        case .blue: return Color.myblue
+        case .green: return Color.mygreen
         }
     }
 }

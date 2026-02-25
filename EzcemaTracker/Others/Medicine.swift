@@ -46,9 +46,9 @@ struct TaskRowView: View {
             .contextMenu {
                 Button(role: .destructive) {
                     context.delete(task)
-                    try? context.save()
                 } label: {
                     Label("Delete", systemImage: "trash")
+                        .foregroundStyle(.red)
                 }
             }
         }
