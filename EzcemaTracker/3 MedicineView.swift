@@ -5,6 +5,7 @@
 //  Created by Tessa Lee on 9/2/26.
 //
 import SwiftUI
+import SwiftData
 
 struct MedicineView: View {
     @State private var currentDate: Date = .init()
@@ -195,5 +196,6 @@ struct MedicineView: View {
 
 #Preview {
     MedicineView()
+        .modelContainer(for: TrackerTask.self)
 }
 

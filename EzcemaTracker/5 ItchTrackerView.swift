@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SeverityTrackerView: View {
+struct ItchTrackerView: View {
     
     var body: some View {
         NavigationStack {
@@ -47,5 +47,5 @@ struct SeverityTrackerView: View {
 }
 
 #Preview {
-    SeverityTrackerView()
+    ItchTrackerView()
 }

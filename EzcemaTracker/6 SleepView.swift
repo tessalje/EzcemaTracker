@@ -207,13 +207,13 @@ struct SleepForm: View {
     func getResponseWithEmoji(_ emoji: String) -> String {
         switch emoji {
         case "😫":
-            return "Severe"
+            return "Severe 😫"
         case "☹️":
-            return "Moderate"
+            return "Moderate ☹️"
         case "🙂":
-            return "Mild"
+            return "Mild 🙂"
         case "😴":
-            return "None"
+            return "None 😴"
         default:
             return ""
         }

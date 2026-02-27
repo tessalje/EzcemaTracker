@@ -54,7 +54,7 @@ struct ContentView: View {
                                         .font(.system(size: 20, weight: .thin))
                                         .padding(.trailing, 25)
                                     
-                                    NavigationLink(destination: SeverityTrackerView()) {
+                                    NavigationLink(destination: ItchTrackerView()) {
                                         Text("Update")
                                             .foregroundStyle(.black)
                                     }

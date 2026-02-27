@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GameView: View {
+struct ProgressView: View {
     var body: some View {
         ZStack {
             BackgroundColor()

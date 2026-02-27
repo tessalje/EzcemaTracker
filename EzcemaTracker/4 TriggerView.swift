@@ -58,7 +58,7 @@ struct TriggerForm: View {
     
     @State private var triggerTitle: String = ""
     @State private var severity: Float = 1.0
-    @State private var triggerType: String = ""
+    @State private var triggerType: TriggerType = .other
     @State private var triggerColor: TaskTint = .blue
     
     var body: some View {
@@ -87,10 +87,26 @@ struct TriggerForm: View {
                 Text("Type")
                     .font(.caption)
                     .foregroundStyle(.gray)
-                TextField("e.g. Food, Weather, Stress, Animal...", text: $triggerType)
+                
+                Menu {
+                    ForEach(TriggerType.allCases, id: \.self) { type in
+                        Button(type.rawValue) {
+                            triggerType = type
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text(triggerType.rawValue)
+                            .foregroundStyle(.black)
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down")
+                            .foregroundStyle(.gray)
+                            .font(.caption)
+                    }
                     .padding(.vertical, 12)
                     .padding(.horizontal, 15)
                     .background(.white.shadow(.drop(color: .black.opacity(0.25), radius: 2)), in: .rect(cornerRadius: 10))
+                }
             }
             
             VStack(alignment: .leading, spacing: 8) {
@@ -132,7 +148,7 @@ struct TriggerForm: View {
                     let newEntry = TriggerData(
                         triggerTitle: triggerTitle,
                         severity: Int(severity),
-                        type: triggerType,
+                        type: triggerType.rawValue,
                         tint: triggerColor
                         )
                     context.insert(newEntry)
@@ -149,8 +165,8 @@ struct TriggerForm: View {
                     .padding(.vertical, 12)
                     .background(triggerColor.color, in: .rect(cornerRadius: 10))
             }
-            .disabled(triggerTitle.isEmpty && triggerType.isEmpty)
-            .opacity(triggerTitle.isEmpty && triggerType.isEmpty ? 0.5 : 1)
+            .disabled(triggerTitle.isEmpty)
+            .opacity(triggerTitle.isEmpty ? 0.5 : 1)
         })
         .padding(15)
     }
@@ -169,72 +185,92 @@ struct TriggerItem: View {
                 .shadow(radius: 2, x: 3, y: 2)
                 .blur(radius: 1.5)
             
-            VStack(spacing: 6) {
-                Image(systemName: "cloud")
-                    .foregroundStyle(.black)
-                    .font(.system(size: 20))
+            VStack(alignment: .leading) {
+                HStack(spacing: 34) {
+                    Image(systemName: TriggerType(rawValue: triggerEntry.type)?.symbol ?? "heart.fill")
+                        .foregroundStyle(.black)
+                        .font(.system(size: 40))
+                    
+                    SeverityGraphView(severity: triggerEntry.severity)
+                        .frame(width: 70, height: 70)
+                }
+                .padding(.bottom, 10)
+                
                 Text(triggerEntry.triggerTitle)
                     .foregroundStyle(.black)
-                    .font(.system(size: 20))
-                    .multilineTextAlignment(.center)
-                Text("Severity: \(triggerEntry.severity)")
+                    .font(.system(size: 28))
+                    .bold()
+                
+                Text("Type: \(triggerEntry.type)")
                     .foregroundStyle(.black)
-                    .font(.system(size: 20))
+                    .font(.system(size: 18))
             }
-            .padding(8)
+            .padding(.leading, 5)
+        }
+        .contextMenu {
+            Button(role: .destructive) {
+                modelContext.delete(triggerEntry)
+            } label: {
+                Label("Delete", systemImage: "trash")
+                    .foregroundStyle(.red)
+            }
         }
     }
 }
 
-struct EfficiencyView: View {
-    var progress: Double = 0.89   // 89%
-    var body: some View {
-        VStack(spacing: 30) {
-            
-            Text("My Efficiency")
-                .font(.title)
-                .bold()
-            
-            ZStack{
-                Circle()
-                    .stroke(
-                        Color.gray.opacity(0.15),
-                        lineWidth: 25
-                    )
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.green.opacity(0.8),
-                                Color.green
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        style: StrokeStyle(
-                            lineWidth: 25,
-                            lineCap: .round
-                        )
-                    )
-                    .rotationEffect(.degrees(-90))
-                    .shadow(color: Color.green.opacity(0.4),
-                            radius: 10)
-                    .animation(.easeInOut, value: progress)
-                
-                VStack {
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(size: 48, weight: .bold))
-                    
-                    Text("of tasks completed")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
-            }
-            .frame(width: 220, height: 220)
-            
+struct SeverityGraphView: View {
+    var severity: Int
+    
+    private var progress: Double {
+        Double(severity)/5.0
+    }
+    
+    private var severityColor: Color {
+        switch severity {
+        case 1:  return .green
+        case 2:  return .yellow
+        case 3:  return .orange
+        case 4:  return .red
+        default: return .purple
         }
-        .padding()
+    }
+    
+    private var strokeColor: Color {
+        if severity <= 2 {
+            return .green
+        } else if severity == 3 {
+            return .yellow
+        } else {
+            return .red
+        }
+    }
+    
+    var body: some View {
+        ZStack{
+            Circle()
+                .stroke(Color.gray.opacity(0.15),lineWidth: 8)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(
+                    LinearGradient(gradient: Gradient(colors: [strokeColor.opacity(0.8),strokeColor]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing),
+                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .shadow(color: Color.green.opacity(0.4),radius: 10)
+                .animation(.easeInOut, value: progress)
+            
+            VStack(spacing: 2) {
+                Text("\(severity)")
+                    .font(.system(size: 20, weight: .bold))
+                Text("of 5")
+                    .font(.caption)
+                    .foregroundColor(.black)
+            }
+        }
+        .frame(width: 60, height: 60)
+        
     }
 }
 

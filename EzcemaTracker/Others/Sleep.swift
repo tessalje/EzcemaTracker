@@ -47,6 +47,16 @@ struct SleepCard: View {
 
     @State private var isShowingColor: Bool = false
     @Environment(\.modelContext) var modelContext
+    
+    private var wakeUpColor: Color {
+        if entry.wakeUps <= 3 {
+            return .green
+        } else if entry.wakeUps >= 4 && entry.wakeUps <= 7 {
+            return .orange
+        } else {
+            return .red
+        }
+    }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -62,8 +72,17 @@ struct SleepCard: View {
                         }
                         Text("**Duration:** \(entry.duration)")
                             .font(.system(size: 16, design: .rounded))
-                        Text("**Wake-ups:** \(Int(entry.wakeUps))")
-                            .font(.system(size: 16, design: .rounded))
+                        
+                        HStack(spacing: 5) {
+                            Text("**Wake-ups:**")
+                                .font(.system(size: 16, design: .rounded))
+                                
+                            Text("\(Int(entry.wakeUps))")
+                                .font(.system(size: 16, design: .rounded))
+                                .foregroundStyle(wakeUpColor)
+                                .bold()
+                        }
+
                         Text("**Itch level:** \(entry.itchLevel)")
                             .font(.system(size: 16, design: .rounded))
                     }
