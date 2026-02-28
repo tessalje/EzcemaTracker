@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import SwiftData
+
 struct HomeView: View {
     var body: some View {
         TabView {
@@ -33,7 +35,15 @@ struct HomeView: View {
 struct ContentView: View {
     let images = ["pip3", "pip4", "pip5", "pip6"]
     let subtitles = ["Sleep", "Medicine","Triggers", "Games"]
-    let destinations: [AnyView] = [AnyView(SleepView()), AnyView(MedicineView()), AnyView(TriggerView()), AnyView(GameView())]
+    let destinations: [AnyView] = [AnyView(SleepView()), AnyView(MedicineView()), AnyView(TriggerView()), AnyView(ProgressView())]
+    
+    @Query var sleepEntries: [SleepData]
+    var graphs: [AnyView] {
+        [AnyView(SleepGraph(sleepEntries: sleepEntries)), AnyView(SleepGraph(sleepEntries: sleepEntries)), AnyView(SkinSeverityGraph())]
+    }
+    
+    let graphName = ["Sleep quality", "Itch severity", "Idk"]
+    
     @Environment(\.modelContext) private var context
     var body: some View {
         NavigationStack{
@@ -110,11 +120,22 @@ struct ContentView: View {
                             .padding(.top, 10)
                             .padding(.trailing, 200)
                         
+                        
                         ScrollView(.horizontal) {
                             HStack {
-                                ForEach(0..<3) {_ in
-                                    GlassCard(width: 170, height:170)
-                                    
+                                ForEach(0..<3) {index in
+                                    VStack {
+                                        Text(graphName[index])
+                                        ZStack {
+                                            GlassCard(width: 170, height:170)
+
+                                            NavigationLink(destination: graphs[index]) {
+                                                graphs[index]
+                                                    .frame(width: 170, height: 170)
+                                            }
+                                            
+                                        }
+                                    }
                                 }
                             }
                         }

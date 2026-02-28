@@ -23,6 +23,34 @@ class SleepData: Identifiable {
     }
 }
     
+struct SleepGraphPoint: Identifiable {
+    let id = UUID()
+    let index: Int
+    let value: Int
+}
+
+struct SleepDataSeries: Identifiable {
+    let id = UUID()
+    let type: String
+    let data: [SleepGraphPoint]
+}
+
+func buildSeverityData(from entries: [SleepData]) -> [SleepGraphPoint] {
+    let recent = Array(entries.suffix(10))
+    return (0..<10).map { i in
+        let value = i < recent.count ? (Int(recent[i].itchLevel) ?? 0) : 0
+        return SleepGraphPoint(index: i + 1, value: value)
+    }
+}
+
+func buildDurationData(from entries: [SleepData]) -> [SleepGraphPoint] {
+    let recent = Array(entries.suffix(10))
+    return (0..<10).map { i in
+        let value = i < recent.count ? (Int(recent[i].duration) ?? 0) : 0
+        return SleepGraphPoint(index: i + 1, value: value)
+    }
+}
+
 
 struct emojiView: View {
    @Binding var selectedEmoji: String

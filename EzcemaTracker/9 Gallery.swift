@@ -7,13 +7,10 @@
 
 import PhotosUI
 import SwiftUI
-import UIKit
 import SwiftData
 
 struct GalleryView: View {
-    
     @State private var path = NavigationPath()
-    @AppStorage("island") var selectedIsland: Bool = false
     @State private var showOnboarding = false
     
     @State private var selectedImage: UIImage?
