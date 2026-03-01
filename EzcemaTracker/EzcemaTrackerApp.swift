@@ -14,6 +14,6 @@ struct EzcemaTrackerApp: App {
         WindowGroup {
             HomeView()
         }
-        .modelContainer(for: [Photo.self, TrackerTask.self, SleepData.self,TriggerData.self])
+        .modelContainer(for: [Photo.self, TrackerTask.self, SleepData.self,TriggerData.self, Itch.self])
     }
 }

@@ -10,39 +10,49 @@ import SwiftData
 
 struct HomeView: View {
     var body: some View {
-        TabView {
-            ContentView()
-                .tabItem {
-                    Image(systemName: "house")
-                    Text("Home")
-                }
-
-            GalleryView()
-                .tabItem {
-                    Image(systemName: "photo.on.rectangle.angled")
-                    Text("Gallery")
-                }
-            
-            PipView()
-                .tabItem {
-                    Image(systemName: "person.crop.circle.fill")
-                    Text("Profile")
-                }
+        NavigationStack {
+            TabView {
+                ContentView()
+                    .tabItem {
+                        Image(systemName: "house")
+                        Text("Home")
+                    }
+                
+                GalleryView()
+                    .tabItem {
+                        Image(systemName: "photo.on.rectangle.angled")
+                        Text("Gallery")
+                    }
+                
+                PipView()
+                    .tabItem {
+                        Image(systemName: "person.crop.circle.fill")
+                        Text("Profile")
+                    }
+            }
         }
+        .navigationBarBackButtonHidden()
     }
 }
 
 struct ContentView: View {
-    let images = ["pip3", "pip4", "pip5", "pip6"]
-    let subtitles = ["Sleep", "Medicine","Triggers", "Games"]
-    let destinations: [AnyView] = [AnyView(SleepView()), AnyView(MedicineView()), AnyView(TriggerView()), AnyView(ProgressView())]
+    let images = ["pip3", "pip4", "pip5", "pip"]
+    let subtitles = ["Sleep", "Medicine","Triggers", "Breathing"]
+    let destinations: [AnyView] = [AnyView(SleepView()), AnyView(MedicineView()), AnyView(TriggerView()), AnyView(StartMeditationView())]
     
     @Query var sleepEntries: [SleepData]
+    @Query var triggerData: [TriggerData]
+    @Query var itchLogs: [Itch]
+    
     var graphs: [AnyView] {
-        [AnyView(SleepGraph(sleepEntries: sleepEntries)), AnyView(SleepGraph(sleepEntries: sleepEntries)), AnyView(SkinSeverityGraph())]
+        [AnyView(SleepGraph(sleepEntries: sleepEntries)), AnyView(TriggerGraph(triggerData: triggerData))]
     }
     
-    let graphName = ["Sleep quality", "Itch severity", "Idk"]
+    var graphsView: [AnyView] {
+        [AnyView(SleepGraphView()), AnyView(TriggerGraphView())]
+    }
+    
+    let graphName = ["Sleep quality", "Triggers"]
     
     @Environment(\.modelContext) private var context
     var body: some View {
@@ -60,9 +70,14 @@ struct ContentView: View {
                                         .font(.system(size: 20, weight: .bold))
                                         .padding(.trailing, 40)
                                     
-                                    Text("Severity: Moderate")
-                                        .font(.system(size: 20, weight: .thin))
-                                        .padding(.trailing, 25)
+                                    if let lastLog = itchLogs.last {
+                                        Text("Overall Severity: \(lastLog.severityLevel)") .font(.system(size: 20, weight: .thin))
+                                            .padding(.trailing, 25)
+                                    } else {
+                                        Text("No logs yet")
+                                            .font(.system(size: 20, weight: .thin))
+                                            .padding(.trailing, 25)
+                                    }
                                     
                                     NavigationLink(destination: ItchTrackerView()) {
                                         Text("Update")
@@ -123,13 +138,13 @@ struct ContentView: View {
                         
                         ScrollView(.horizontal) {
                             HStack {
-                                ForEach(0..<3) {index in
+                                ForEach(0..<2) {index in
                                     VStack {
                                         Text(graphName[index])
                                         ZStack {
                                             GlassCard(width: 170, height:170)
-
-                                            NavigationLink(destination: graphs[index]) {
+                                            
+                                            NavigationLink(destination: graphsView[index]) {
                                                 graphs[index]
                                                     .frame(width: 170, height: 170)
                                             }
@@ -145,6 +160,7 @@ struct ContentView: View {
                 }
                 .navigationTitle("Ezcemate")
             }
+            .navigationBarBackButtonHidden()
         }
     }
 }

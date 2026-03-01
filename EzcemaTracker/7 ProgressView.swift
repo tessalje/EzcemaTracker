@@ -7,86 +7,101 @@
 
 import SwiftUI
 import Charts
-
-struct ProgressView: View {
-    var body: some View {
-        ZStack {
-            BackgroundColor()
-        }
-        
-    }
-}
-
-
-struct SkinSeverityGraph: View {
-    var body: some View {
-        Text("Skin Severity Trend")
-        Text("Line graph")
-        Text("Track daily eczema condition: 0 = Clear skin, 1 = Mild, 2 = Moderate")
-    }
-}
-
-struct SleepGraph: View {
-    let sleepEntries: [SleepData]
-    
-    var data: [SleepDataSeries] {
-        [SleepDataSeries(type: "Sleep Duration", data: buildDurationData(from: sleepEntries)), SleepDataSeries(type: "Severity", data: buildSeverityData(from: sleepEntries))]
-    }
+import SwiftData
+//trigger graph
+struct TriggerGraphView: View {
+    @Query(sort: \TriggerData.id, order: .forward)
+    var triggerData: [TriggerData]
     
     var body: some View {
         NavigationStack {
             VStack {
                 Text("Sleep Duration vs Severity")
-                    .bold()
-                Chart(data) { series in
-                    ForEach(series.data) { point in
-                        LineMark(
-                            x: .value("Entry", point.index),
-                            y: .value(series.type, point.value)
-                        )
-                    }
-                    .foregroundStyle(by: .value("Type", series.type))
-                    .symbol(by: .value("Type", series.type))
-                }
-                .aspectRatio(1, contentMode: .fit)
-                .padding()
+                    .font(.title2)
+                
+                TriggerGraph(triggerData: triggerData)
             }
             .navigationTitle("Sleep Quality")
         }
     }
 }
 
-struct ChartData: Identifiable {
-    let id = UUID()
-    let type: String
-    let count: Int
-}
-
-struct SleepGraph2: View {
-    let data = [ChartData(type: "bird", count: 1),
-                ChartData(type: "dog", count: 2),
-                ChartData(type: "cat", count: 3)]
-
-    var maxChartData: ChartData? {
-        data.max { $0.count < $1.count }
-    }
-
+struct TriggerGraph: View {
+    let triggerData: [TriggerData]
+    
     var body: some View {
-        Chart {
-            ForEach(data) { dataPoint in
-
-                BarMark(x: .value("Type", dataPoint.type),
-                        y: .value("Population", dataPoint.count))
-                .foregroundStyle(Color.gray.opacity(0.5))
-            }
-
-            RuleMark(y: .value("Average", 1.5))
-                .annotation(position: .bottom,
-                            alignment: .bottomLeading) {
-                    Text("average 1.5")
-                        .foregroundColor(.accentColor)
+        Chart(triggerData) { dataPoint in
+            BarMark(x: .value("Severity", dataPoint.severity), y: .value("Type", dataPoint.type))
+                .foregroundStyle(dataPoint.tintColor)
+                .annotation(position: .trailing) {
+                    Text("\(dataPoint.severity)")
+                        .foregroundColor(.gray)
                 }
         }
+        .chartLegend(.hidden)
+        .chartXAxis(.hidden)
+        .chartYAxis {
+            AxisMarks { _ in
+                AxisValueLabel()
+            }
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .padding()
+    }
+}
+
+//sleep graph
+struct SleepGraphView: View {
+    @Query(sort: \SleepData.id, order: .forward)
+    var sleepEntries: [SleepData]
+    
+    var body: some View {
+        NavigationStack {
+            VStack {
+                Text("Sleep Duration vs Severity")
+                    .font(.title2)
+                
+                SleepGraph(sleepEntries: sleepEntries)
+            }
+            .navigationTitle("Sleep Quality")
+        }
+    }
+}
+
+struct SleepGraph: View {
+    let sleepEntries: [SleepData]
+    
+    var recentEntries: ArraySlice<SleepData> {
+        sleepEntries.suffix(7)
+    }
+    
+    var data: [SleepDataSeries] {
+        [SleepDataSeries(type: "Sleep Duration", data: buildDurationData(from: sleepEntries)),
+         SleepDataSeries(type: "Severity", data: buildSeverityData(from: sleepEntries))]
+    }
+    var body: some View {
+        Chart {
+            ForEach(Array(recentEntries.enumerated()), id: \.element.id) { index, entry in
+                let durationValue = Double(entry.duration) ?? 0
+                let itchValue = Double(entry.itchLevel) ?? 0
+                
+                BarMark(
+                    x: .value("Day", "Day \(index + 1)"),
+                    y: .value("Value", durationValue)
+                )
+                .position(by: .value("Type", "Duration"))
+                .foregroundStyle(by: .value("Type", "Duration"))
+                
+                // Itch level bar
+                BarMark(
+                    x: .value("Day", "Day \(index + 1)"),
+                    y: .value("Value", itchValue)
+                )
+                .position(by: .value("Type", "Itch Level"))
+                .foregroundStyle(by: .value("Type", "Itch Level"))
+            }
+        }
+        .chartLegend(position: .bottom)
         .aspectRatio(1, contentMode: .fit)
         .padding()
     }
@@ -94,5 +109,6 @@ struct SleepGraph2: View {
 
 
 #Preview {
-    SleepGraph2()
+    SleepGraphView()
+        .modelContainer(for: SleepData.self, inMemory: true)
 }

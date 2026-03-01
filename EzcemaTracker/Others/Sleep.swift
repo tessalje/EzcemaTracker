@@ -37,17 +37,27 @@ struct SleepDataSeries: Identifiable {
 
 func buildSeverityData(from entries: [SleepData]) -> [SleepGraphPoint] {
     let recent = Array(entries.suffix(10))
-    return (0..<10).map { i in
-        let value = i < recent.count ? (Int(recent[i].itchLevel) ?? 0) : 0
-        return SleepGraphPoint(index: i + 1, value: value)
+    let paddingCount = max(0, 10 - recent.count)
+
+    let paddedEntries =
+        Array(repeating: 0, count: paddingCount) +
+        recent.map { Int($0.itchLevel) ?? 0 }
+
+    return paddedEntries.enumerated().map { index, value in
+        SleepGraphPoint(index: index + 1, value: value)
     }
 }
 
 func buildDurationData(from entries: [SleepData]) -> [SleepGraphPoint] {
     let recent = Array(entries.suffix(10))
-    return (0..<10).map { i in
-        let value = i < recent.count ? (Int(recent[i].duration) ?? 0) : 0
-        return SleepGraphPoint(index: i + 1, value: value)
+    let paddingCount = max(0, 10 - recent.count)
+
+    let paddedEntries =
+        Array(repeating: 0, count: paddingCount) +
+        recent.map { Int($0.duration) ?? 0 }
+
+    return paddedEntries.enumerated().map { index, value in
+        SleepGraphPoint(index: index + 1, value: value)
     }
 }
 
