@@ -65,18 +65,16 @@ struct ContentView: View {
                             GlassCard(width: 360, height: 160)
                             
                             HStack {
-                                VStack {
+                                VStack(alignment: .leading) {
                                     Text("Meet Pip, Your Ezcemate!")
                                         .font(.system(size: 20, weight: .bold))
                                         .padding(.trailing, 40)
                                     
                                     if let lastLog = itchLogs.last {
                                         Text("Overall Severity: \(lastLog.severityLevel)") .font(.system(size: 20, weight: .thin))
-                                            .padding(.trailing, 25)
                                     } else {
                                         Text("No logs yet")
                                             .font(.system(size: 20, weight: .thin))
-                                            .padding(.trailing, 25)
                                     }
                                     
                                     NavigationLink(destination: ItchTrackerView()) {
@@ -87,7 +85,6 @@ struct ContentView: View {
                                     .buttonStyle(.borderedProminent)
                                     .buttonBorderShape(.capsule)
                                     .tint(.white)
-                                    .padding(.trailing, 113)
                                     
                                 }
                                 Image("pip2")
